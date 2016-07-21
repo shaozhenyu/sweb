@@ -1,26 +1,22 @@
 package main
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/codegangsta/martini"
+	"libs/cache"
+	"routes/uc"
 )
 
 func main() {
+	fmt.Println("start sweb")
 	m := martini.Classic()
-	m.Get("/", hellosweb)
-	m.Get("/password", getpassword)
-	m.Run()
-}
 
-func getpassword(r *http.Request) (int, interface{}) {
-	app := r.URL.Query().Get("app")
-	if app == "" {
-		return 400, "请求格式错误"
+	RedisHost := "127.0.0.1:6379"
+	rd_cache, err := cache.New(RedisHost, 0, 100)
+	if err != nil {
+		return
 	}
-	return 200, nil
-}
-
-func hellosweb() string {
-	return "hello world!"
+	m.Map(rd_cache)
+	uc.Register(m)
+	m.Run()
 }
