@@ -2,11 +2,12 @@ package uc
 
 import (
 	"fmt"
+	"github.com/qiniu/xlog"
 	"libs/cache"
 	"net/http"
 )
 
-func GetPassword(cache_ cache.CacheStorage, r *http.Request) (int, interface{}) {
+func GetPassword(log *xlog.Logger, cache_ cache.CacheStorage, r *http.Request) (int, interface{}) {
 	app := r.URL.Query().Get("app")
 	if app == "" {
 		return 400, "请求格式错误"
@@ -17,8 +18,7 @@ func GetPassword(cache_ cache.CacheStorage, r *http.Request) (int, interface{}) 
 		return 400, err
 	}
 
-	fmt.Println("password is ", string(ps))
-
+	log.Info("password is ", string(ps))
 	return 200, string(ps)
 }
 
