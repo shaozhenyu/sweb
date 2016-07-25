@@ -22,6 +22,8 @@ func main() {
 
 	ins := install.New()
 
+	db.NewGroup(friends.Friends{})
+
 	RedisHost := "127.0.0.1:6379"
 	rd_cache, err := cache.New(RedisHost, 0, 100)
 	if err != nil {
