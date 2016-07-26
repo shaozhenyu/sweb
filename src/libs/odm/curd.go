@@ -3,11 +3,11 @@ package odm
 import (
 	"encoding/json"
 	"io"
+	"net/http"
 	"reflect"
 	"time"
 
 	"github.com/qiniu/log"
-	"net/http"
 )
 
 type ODMError struct {
@@ -69,6 +69,7 @@ func (db *DB) Find(selector interface{}, v interface{}) error {
 	//defer db.close()
 
 	if err := coll.Find(selector).One(v); err != nil {
+		log.Info("eeeeeeeeeee")
 		return err
 	}
 	return nil

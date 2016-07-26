@@ -6,12 +6,13 @@ import (
 	"libs/odm"
 
 	"github.com/qiniu/xlog"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func GetResource(log *xlog.Logger, db *odm.DB, id int64, collName string, req *http.Request) (int, interface{}) {
 	log.Info("GetResource")
 
-	v, err := db.Find2(odm.M{"id": id}, collName)
+	v, err := db.Find2(bson.M{"_id": id}, collName)
 	if err != nil {
 		return 400, err
 	}
