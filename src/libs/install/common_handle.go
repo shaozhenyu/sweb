@@ -1,18 +1,20 @@
 package install
 
-// import (
-// 	"fmt"
-// 	"net/http"
-// 	//"strconv"
+import (
+	"net/http"
 
-// 	"libs/odm"
+	"libs/odm"
 
-// 	//"github.com/codegangsta/inject"
-// 	"github.com/codegangsta/martini"
-// 	"github.com/qiniu/xlog"
-// )
+	"github.com/qiniu/xlog"
+)
 
-// func GetResource(log *xlog.Logger, db *odm, id int, collname string, req *http.Request) {
-// 	log.Info("GetResource")
+func GetResource(log *xlog.Logger, db *odm.DB, id int64, collName string, req *http.Request) (int, interface{}) {
+	log.Info("GetResource")
 
-// }
+	v, err := db.Find2(odm.M{"id": id}, collName)
+	if err != nil {
+		return 400, err
+	}
+
+	return http.StatusOK, v
+}

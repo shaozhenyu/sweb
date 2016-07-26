@@ -35,5 +35,6 @@ func main() {
 
 	uc.Register(ins)
 	friends.Register(ins)
+	ins.RegisterCommon(db, "friends", ins)
 	ins.Run()
 }

@@ -50,6 +50,30 @@ func setUnixTime(obj interface{}, unix int64, fields ...string) {
 	}
 }
 
+func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) {
+	v, err := db.v(collName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Find(selector, v)
+	if err != nil {
+		return nil, err
+	}
+
+	return v, nil
+}
+
+func (db *DB) Find(selector interface{}, v interface{}) error {
+	coll := db.C(v)
+	//defer db.close()
+
+	if err := coll.Find(selector).One(v); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (db *DB) Insert2(collName string, req *http.Request) (interface{}, error) {
 	v, err := db.v(collName)
 	if err != nil {

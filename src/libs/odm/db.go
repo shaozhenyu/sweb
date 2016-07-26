@@ -10,12 +10,18 @@ import (
 	"gopkg.in/mgo.v2"
 )
 
+type M map[string]interface{}
+
 type DB struct {
 	dbName  string
 	Session *mgo.Session
 	Coll    map[string]*Model
 	sync.Mutex
 	*Option
+}
+
+type Collection struct {
+	*mgo.Collection
 }
 
 type Option struct {
@@ -67,6 +73,22 @@ func collName(v interface{}) string {
 		return strings.ToLower(inflection.Plural(type_.Name()))
 	}
 	panic("should be struct ptr")
+}
+
+func (db *DB) CollName(v interface{}) string {
+	return collName(v)
+}
+
+func (db *DB) C(v interface{}) *Collection {
+	collName := db.CollName(v)
+	return db.C2(collName)
+}
+
+func (db *DB) C2(collName string) *Collection {
+	if _, ok := db.Coll[collName]; ok {
+		return &Collection{db.Session.Copy().DB(db.dbName).C(collName)}
+	}
+	panic("not regiested struct " + collName)
 }
 
 type Model struct {
