@@ -2,6 +2,7 @@ package install
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"reflect"
 
@@ -62,4 +63,12 @@ func rewriteReturnHandler() martini.ReturnHandler {
 		}
 		res.Write(bytes)
 	}
+}
+
+func (i *Install) RunOnAddr(addr string) {
+	for _, route := range i.All() {
+		fmt.Printf("%s:\t\t%s\n", route.Method(), route.Pattern())
+	}
+
+	i.ClassicMartini.RunOnAddr(addr)
 }
