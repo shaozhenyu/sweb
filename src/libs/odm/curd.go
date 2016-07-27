@@ -3,20 +3,15 @@ package odm
 import (
 	"encoding/json"
 	"io"
-	"net/http"
 	"reflect"
 	"time"
 
-	"github.com/qiniu/log"
+	//"github.com/qiniu/log"
 )
 
 type ODMError struct {
 	Err string
 }
-
-var (
-	bodyLimit = 8 << 20
-)
 
 var (
 	ErrNotRegisted = &ODMError{
@@ -28,14 +23,19 @@ func (o *ODMError) Error() string {
 	return o.Err
 }
 
-func (db *DB) Close() {
-	db.Session.Close()
+type ODMRefError struct {
+	CollName  string `json:"resource_name"`
+	FieldName string `json:"field_name"`
+}
+
+func (o ODMRefError) Error() string {
+	bs, _ := json.Marshal(o)
+	return string(bs)
 }
 
 func (db *DB) v(collName string) (interface{}, error) {
 
 	if t, ok := db.Coll[collName]; ok {
-		log.Info("collname : ", collName)
 		return reflect.New(t.Type).Interface(), nil
 	}
 	return nil, ErrNotRegisted
@@ -66,39 +66,32 @@ func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) 
 
 func (db *DB) Find(selector interface{}, v interface{}) error {
 	coll := db.C(v)
-	//defer db.close()
+	defer coll.Close()
 
 	if err := coll.Find(selector).One(v); err != nil {
-		log.Info("eeeeeeeeeee")
 		return err
 	}
 	return nil
 }
 
-func (db *DB) Insert2(collName string, req *http.Request) (interface{}, error) {
+func (db *DB) Insert2(collName string, reader io.Reader) (interface{}, error) {
 	v, err := db.v(collName)
 	if err != nil {
 		return nil, err
 	}
 
-	limitReader := io.LimitReader(req.Body, int64(bodyLimit))
-
-	decoder := json.NewDecoder(limitReader)
+	decoder := json.NewDecoder(reader)
 	if err := decoder.Decode(v); err != nil {
 		return nil, err
 	}
 
 	err = db.Insert(v, collName)
-	if err != nil {
-		return nil, err
-	}
-
-	return v, nil
+	return v, err
 }
 
 func (db *DB) Insert(v interface{}, collName string) error {
-	coll := db.Session.DB(db.dbName).C(collName)
-	//defer db.Close()
+	coll := db.C(v)
+	defer coll.Close()
 
 	setUnixTime(v, time.Now().UnixNano(), "UpdatedAt", "CreatedAt")
 

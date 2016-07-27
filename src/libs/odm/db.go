@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"strings"
 	"sync"
+	"time"
 
-	"github.com/qiniu/log"
 	"github.com/qor/inflection"
 	"gopkg.in/mgo.v2"
 )
@@ -22,6 +22,19 @@ type DB struct {
 
 type Collection struct {
 	*mgo.Collection
+}
+
+func (c *Collection) Close() {
+	defer func() {
+		for i := 0; i <= 3; i-- {
+			if err := recover(); err == nil {
+				return
+			}
+			time.Sleep(time.Second)
+		}
+	}()
+	c.Collection.Database.Session.Close()
+	return
 }
 
 type Option struct {
@@ -44,7 +57,6 @@ func New(url, dbName string, opt *Option) (*DB, error) {
 }
 
 func (d *DB) NewGroup(v ...interface{}) error {
-	log.Info("newGroup")
 
 	d.Lock()
 	defer d.Unlock()
@@ -89,6 +101,10 @@ func (db *DB) C2(collName string) *Collection {
 		return &Collection{db.Session.Copy().DB(db.dbName).C(collName)}
 	}
 	panic("not regiested struct " + collName)
+}
+
+func (db *DB) Close() {
+	db.Session.Close()
 }
 
 type Model struct {

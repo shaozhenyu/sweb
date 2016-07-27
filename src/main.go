@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"routes/friends"
+	"models"
 	"routes/uc"
 
 	"libs/cache"
@@ -12,6 +12,7 @@ import (
 )
 
 func main() {
+
 	fmt.Println("start sweb")
 
 	DBHost := "127.0.0.1:27017"
@@ -22,7 +23,7 @@ func main() {
 
 	ins := install.New()
 
-	db.NewGroup(friends.Friends{})
+	db.NewGroup(models.Friends{})
 
 	RedisHost := "127.0.0.1:6379"
 	rd_cache, err := cache.New(RedisHost, 0, 100)
@@ -34,7 +35,6 @@ func main() {
 	ins.Map(rd_cache)
 
 	uc.Register(ins)
-	friends.Register(ins)
 	ins.RegisterCommon(db, "friends", ins)
 	ins.RunOnAddr(":8080")
 }
