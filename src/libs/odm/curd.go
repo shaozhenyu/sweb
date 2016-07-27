@@ -7,6 +7,7 @@ import (
 	"time"
 
 	//"github.com/qiniu/log"
+	"gopkg.in/mgo.v2"
 )
 
 type ODMError struct {
@@ -100,4 +101,26 @@ func (db *DB) Insert(v interface{}, collName string) error {
 		return err
 	}
 	return nil
+}
+
+func (db *DB) Remove(selector interface{}, v interface{}) error {
+	coll := db.C(v)
+	defer coll.Close()
+
+	chg := mgo.Change{Remove: true}
+
+	if _, err := coll.Find(selector).Apply(chg, v); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (db *DB) Remove2(selector interface{}, collName string) (interface{}, error) {
+	v, err := db.v(collName)
+	if err != nil {
+		return nil, err
+	}
+
+	err = db.Remove(selector, v)
+	return v, nil
 }

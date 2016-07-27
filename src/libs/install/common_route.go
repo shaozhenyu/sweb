@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"libs/errorcode"
 	"libs/odm"
 
 	"github.com/go-martini/martini"
@@ -23,7 +24,7 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 			idStr := params["id"]
 			id, err := strconv.ParseInt(idStr, 10, 64)
 			if err != nil {
-				return 0, err
+				return errorcode.HandleError(errorcode.ErrBadRequestBody)
 			}
 
 			statusCode, ret := GetResource(log, db, id, collname, req)
@@ -33,6 +34,17 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 		r.Post(fmt.Sprintf("/%s", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
 
 			statusCode, ret := PostResource(log, db, collname, req)
+			return statusCode, ret
+		})
+
+		r.Delete(fmt.Sprintf("/%s/(?P<id>[0-9]+$)", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
+			idStr := params["id"]
+			id, err := strconv.ParseInt(idStr, 10, 64)
+			if err != nil {
+				return errorcode.HandleError(errorcode.ErrBadRequestBody)
+			}
+
+			statusCode, ret := DeleteResource(log, db, id, collname, req)
 			return statusCode, ret
 		})
 	})
