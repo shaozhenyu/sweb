@@ -1,7 +1,7 @@
 package uc
 
 import (
-	"github.com/codegangsta/martini"
+	"github.com/go-martini/martini"
 )
 
 func Register(m martini.Router) {

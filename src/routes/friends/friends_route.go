@@ -1,7 +1,13 @@
 package friends
 
 import (
-	"github.com/codegangsta/martini"
+	"libs/install"
+
+	"github.com/go-martini/martini"
+)
+
+const (
+	APIPrefix = "/api/sweb"
 )
 
 type Friends struct {
@@ -13,7 +19,9 @@ type Friends struct {
 	UpdatedAt int64  `json: "updated_at" bson: "updated_at"`
 }
 
-func Register(m martini.Router) {
-	m.Get("/friends", GetFriends)
-	m.Post("/friends", AddFriends)
+func Register(install *install.Install) {
+	install.Group(APIPrefix, func(r martini.Router) {
+		r.Get("/friends", GetFriends)
+		r.Post("/friends", AddFriends)
+	})
 }

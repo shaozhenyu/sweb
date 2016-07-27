@@ -9,7 +9,7 @@ import (
 
 	//"github.com/codegangsta/martini"
 	"github.com/qiniu/xlog"
-	"gopkg.in/mgo.v2/bson"
+	//"gopkg.in/mgo.v2/bson"
 )
 
 func GetFriends(log *xlog.Logger, db *odm.DB, r *http.Request) (int, interface{}) {
@@ -23,14 +23,13 @@ func GetFriends(log *xlog.Logger, db *odm.DB, r *http.Request) (int, interface{}
 
 	log.Info("id is : ", id)
 
-	c := db.Session.DB("sweb").C("friends")
+	//c := db.Session.DB("sweb").C("friends")
 
-	var users []Friends
-	err = c.Find(bson.M{"name": "szy"}).All(&users)
-	if err != nil {
-		return 400, nil
+	users := Friends{}
+	if err = db.Find(odm.M{"_id": id}, &users); err != nil {
+		return 400, err
 	}
-	log.Info(users)
+
 	return 200, users
 }
 

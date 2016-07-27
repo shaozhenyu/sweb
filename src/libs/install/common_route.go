@@ -7,7 +7,7 @@ import (
 
 	"libs/odm"
 
-	"github.com/codegangsta/martini"
+	"github.com/go-martini/martini"
 	"github.com/qiniu/xlog"
 )
 
@@ -24,6 +24,7 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 		}
 
 		statusCode, ret := GetResource(log, db, id, collname, req)
+		log.Info(ret)
 		return statusCode, ret
 	})
 }
