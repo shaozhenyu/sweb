@@ -37,6 +37,13 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 			return statusCode, ret
 		})
 
+		r.Get(fmt.Sprintf("/%s", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
+
+			m := (map[string]string)(params)
+			statusCode, ret := ListResource(log, db, collname, m, req)
+			return statusCode, ret
+		})
+
 		r.Put(fmt.Sprintf("/%s/(?P<id>[0-9]+$)", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
 
 			idStr := params["id"]

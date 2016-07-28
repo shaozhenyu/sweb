@@ -6,6 +6,7 @@ import (
 
 	"libs/errorcode"
 	"libs/odm"
+	"libs/spec"
 
 	"github.com/qiniu/xlog"
 )
@@ -34,6 +35,18 @@ func PostResource(log *xlog.Logger, db *odm.DB, collName string, req *http.Reque
 		return errorcode.HandleError(err)
 	}
 	return http.StatusCreated, v
+}
+
+func ListResource(log *xlog.Logger, db *odm.DB, collName string, params map[string]string, req *http.Request) (int, interface{}) {
+
+	listq := spec.NewListQueryWithReq(db.Coll[collName], req)
+	v, err := db.ListWithSpec(collName, listq)
+	if err != nil {
+		log.Error(err)
+		return errorcode.HandleError(err)
+	}
+
+	return http.StatusOK, v
 }
 
 func PutResource(log *xlog.Logger, db *odm.DB, id int64, collName string, req *http.Request, params map[string]string) (int, interface{}) {

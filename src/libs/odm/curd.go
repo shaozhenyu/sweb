@@ -6,8 +6,10 @@ import (
 	"reflect"
 	"time"
 
+	"libs/spec"
+
 	"github.com/fatih/structs"
-	"github.com/qiniu/log"
+	//"github.com/qiniu/log"
 	"gopkg.in/mgo.v2"
 )
 
@@ -36,9 +38,15 @@ func (o ODMRefError) Error() string {
 }
 
 func (db *DB) v(collName string) (interface{}, error) {
-
 	if t, ok := db.Coll[collName]; ok {
 		return reflect.New(t.Type).Interface(), nil
+	}
+	return nil, ErrNotRegisted
+}
+
+func (db *DB) vv(collName string) (interface{}, error) {
+	if t, ok := db.Coll[collName]; ok {
+		return reflect.New(reflect.SliceOf(t.Type)).Interface(), nil
 	}
 	return nil, ErrNotRegisted
 }
@@ -102,6 +110,58 @@ func (db *DB) Insert2(collName string, reader io.Reader) (interface{}, error) {
 
 	err = db.Insert(v, collName)
 	return v, err
+}
+
+func (db *DB) ListWithSpec(collName string, s *spec.ListQuery) (interface{}, error) {
+	return db.List2(collName, s.Cond, s.Sorts, s.Paging.From, s.Paging.Size)
+}
+
+func (db *DB) List2(collName string, cond map[string]interface{}, sorts []string, from, size int) (interface{}, error) {
+	v, err := db.v(collName)
+	if err != nil {
+		return nil, err
+	}
+
+	vv, err := db.vv(collName)
+	if err != nil {
+		return nil, err
+	}
+
+	coll := db.C(v)
+	defer coll.Close()
+
+	q := coll.Find(cond).Sort(sorts...)
+
+	if from < 0 {
+		from = 0
+	}
+
+	if size < 1 {
+		size = 20
+	} else if size > 100 {
+		size = 100
+	}
+
+	total, err := q.Count()
+	if err != nil {
+		return nil, err
+	}
+
+	err = q.Skip(from).Limit(size).All(vv)
+	if err != nil {
+		return nil, err
+	}
+
+	ret := spec.ListResult{
+		Result: vv,
+		Paging: spec.Paging{
+			From:  from,
+			Size:  reflect.ValueOf(vv).Elem().Len(),
+			Total: total,
+		},
+	}
+
+	return ret, nil
 }
 
 func (db *DB) handleReadOnly(v interface{}, changed map[string]interface{}) error {
