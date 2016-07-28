@@ -37,6 +37,20 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 			return statusCode, ret
 		})
 
+		r.Put(fmt.Sprintf("/%s/(?P<id>[0-9]+$)", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
+
+			idStr := params["id"]
+			id, err := strconv.ParseInt(idStr, 10, 64)
+			if err != nil {
+				return errorcode.HandleError(errorcode.ErrBadRequestBody)
+			}
+
+			m := (map[string]string)(params)
+
+			statusCode, ret := PutResource(log, db, id, collname, req, m)
+			return statusCode, ret
+		})
+
 		r.Delete(fmt.Sprintf("/%s/(?P<id>[0-9]+$)", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
 			idStr := params["id"]
 			id, err := strconv.ParseInt(idStr, 10, 64)

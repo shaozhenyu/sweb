@@ -6,7 +6,8 @@ import (
 	"reflect"
 	"time"
 
-	//"github.com/qiniu/log"
+	"github.com/fatih/structs"
+	"github.com/qiniu/log"
 	"gopkg.in/mgo.v2"
 )
 
@@ -51,6 +52,16 @@ func setUnixTime(obj interface{}, unix int64, fields ...string) {
 	}
 }
 
+func (db *DB) Find(selector interface{}, v interface{}) error {
+	coll := db.C(v)
+	defer coll.Close()
+
+	if err := coll.Find(selector).One(v); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) {
 	v, err := db.v(collName)
 	if err != nil {
@@ -65,11 +76,14 @@ func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) 
 	return v, nil
 }
 
-func (db *DB) Find(selector interface{}, v interface{}) error {
+func (db *DB) Insert(v interface{}, collName string) error {
 	coll := db.C(v)
 	defer coll.Close()
 
-	if err := coll.Find(selector).One(v); err != nil {
+	setUnixTime(v, time.Now().UnixNano(), "UpdatedAt", "CreatedAt")
+
+	err := coll.Insert(v)
+	if err != nil {
 		return err
 	}
 	return nil
@@ -90,17 +104,54 @@ func (db *DB) Insert2(collName string, reader io.Reader) (interface{}, error) {
 	return v, err
 }
 
-func (db *DB) Insert(v interface{}, collName string) error {
+func (db *DB) handleReadOnly(v interface{}, changed map[string]interface{}) error {
+	//collName_ := db.CollName(v)
+	//m := db.Coll[collName_]
+
+	delete(changed, "_id")
+	delete(changed, "created_at")
+	delete(changed, "updated_at")
+
+	return nil
+}
+
+func (db *DB) Update(selector interface{}, v interface{}, collName string, params map[string]string) error {
 	coll := db.C(v)
 	defer coll.Close()
 
-	setUnixTime(v, time.Now().UnixNano(), "UpdatedAt", "CreatedAt")
+	structs.DefaultTagName = "bson"
+	m := structs.Map(v)
 
-	err := coll.Insert(v)
-	if err != nil {
-		return err
+	db.handleReadOnly(collName, m)
+
+	m["updated_at"] = time.Now().UnixNano()
+
+	chg := mgo.Change{
+		Update:    M{"$set": m},
+		ReturnNew: true,
 	}
-	return nil
+
+	_, err := coll.Find(selector).Apply(chg, v)
+
+	return err
+}
+
+func (db *DB) Update2(selector interface{}, collName string, r io.Reader, params map[string]string) (interface{}, error) {
+	v, err := db.v(collName)
+	if err != nil {
+		return nil, err
+	}
+
+	decoder := json.NewDecoder(r)
+	if err := decoder.Decode(v); err != nil {
+		return nil, err
+	}
+
+	err = db.Update(selector, v, collName, params)
+	if err != nil {
+		return nil, err
+	}
+	return v, nil
 }
 
 func (db *DB) Remove(selector interface{}, v interface{}) error {

@@ -1,10 +1,6 @@
 T1
-1.redis
-2.mongo
-3.config
-4.用户
-5.token
-
-T2
-1. log处理
-2. error机制处理
+1.config
+2.用户
+3.token
+4.find模糊处理
+5.allowmethod
