@@ -16,11 +16,12 @@ const (
 	prefix = "/api/sweb"
 )
 
-func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Router) {
+func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Router, mhandlers ...martini.Handler) {
 
 	this.Group(prefix, func(r martini.Router) {
 		r.Get(fmt.Sprintf("/%s/(?P<id>[0-9]+$)", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
 
+			log.Info("get")
 			idStr := params["id"]
 			id, err := strconv.ParseInt(idStr, 10, 64)
 			if err != nil {
@@ -68,6 +69,6 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 			statusCode, ret := DeleteResource(log, db, id, collname, req)
 			return statusCode, ret
 		})
-	})
+	}, mhandlers...)
 
 }

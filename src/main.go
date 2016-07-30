@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
 	"models"
 	"routes/uc"
@@ -9,6 +10,8 @@ import (
 	"libs/cache"
 	"libs/install"
 	"libs/odm"
+
+	"github.com/go-martini/martini"
 )
 
 func main() {
@@ -35,6 +38,15 @@ func main() {
 	ins.Map(rd_cache)
 
 	uc.Register(ins)
-	ins.RegisterCommon(db, "friends", ins)
+	ins.RegisterCommon(db, "friends", ins, Mhandle())
 	ins.RunOnAddr(":8080")
+}
+
+func Mhandle() martini.Handler {
+	fmt.Println("1111111111")
+
+	return func(context martini.Context, req *http.Request) {
+		fmt.Println("22222222")
+		return
+	}
 }
