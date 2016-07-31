@@ -2,9 +2,11 @@ package uc
 
 import (
 	"fmt"
-	"github.com/qiniu/xlog"
-	"libs/cache"
 	"net/http"
+
+	"libs/cache"
+
+	"github.com/qiniu/xlog"
 )
 
 func GetPassword(log *xlog.Logger, cache_ cache.CacheStorage, r *http.Request) (int, interface{}) {

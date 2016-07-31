@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"models"
+	"routes/auth"
 	"routes/uc"
 
 	"libs/cache"
@@ -26,7 +27,7 @@ func main() {
 
 	ins := install.New()
 
-	db.NewGroup(models.Friends{})
+	db.NewGroup(models.Friends{}, models.MobileIdentity{})
 
 	RedisHost := "127.0.0.1:6379"
 	rd_cache, err := cache.New(RedisHost, 0, 100)
@@ -38,15 +39,18 @@ func main() {
 	ins.Map(rd_cache)
 
 	uc.Register(ins)
+	auth.Register(ins, db)
+
 	ins.RegisterCommon(db, "friends", ins, Mhandle())
+	ins.RegisterCommon(db, "mobileidentities", ins)
 	ins.RunOnAddr(":8080")
 }
 
 func Mhandle() martini.Handler {
-	fmt.Println("1111111111")
 
 	return func(context martini.Context, req *http.Request) {
-		fmt.Println("22222222")
+		//TODO
+		fmt.Println("do martini handler")
 		return
 	}
 }
