@@ -84,10 +84,25 @@ func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) 
 	return v, nil
 }
 
+func (db *DB) SetID(obj interface{}, id interface{}) {
+	n := db.CollName(obj)
+	m := db.Coll[n]
+
+	elem := reflect.ValueOf(obj).Elem()
+	if f := elem.FieldByName(m.IDFieldName); f.IsValid() {
+		if i, ok := id.(int64); ok {
+			f.SetInt(i)
+		}
+	}
+}
+
 func (db *DB) Insert(v interface{}, collName string) error {
 	coll := db.C(v)
 	defer coll.Close()
 
+	if db.incr != nil {
+		db.SetID(v, db.incr.Incr(coll.FullName))
+	}
 	setUnixTime(v, time.Now().UnixNano(), "UpdatedAt", "CreatedAt")
 
 	err := coll.Insert(v)

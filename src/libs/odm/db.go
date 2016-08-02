@@ -16,6 +16,7 @@ type DB struct {
 	dbName  string
 	Session *mgo.Session
 	Coll    map[string]*Model
+	incr    IdMaker
 	sync.Mutex
 	*Option
 }
@@ -54,6 +55,10 @@ func New(url, dbName string, opt *Option) (*DB, error) {
 		Coll:    coll,
 		Option:  opt,
 	}, nil
+}
+
+func NewCollection(c *mgo.Collection) *Collection {
+	return &Collection{c.Database.Session.Copy().DB(c.Database.Name).C(c.Name)}
 }
 
 func (d *DB) NewGroup(v ...interface{}) error {
@@ -107,12 +112,26 @@ func (db *DB) Close() {
 	db.Session.Close()
 }
 
+func (db *DB) SetIDMaker(incr IdMaker) {
+	db.incr = incr
+}
+
 type Model struct {
-	Val interface{}
+	Val         interface{}
+	IDFieldName string
 	reflect.Type
 }
 
 func newModel(val interface{}) *Model {
+
 	ret := &Model{Val: val, Type: reflect.TypeOf(val)}
+
+	for i := 0; i < ret.Type.NumField(); i++ {
+		f := ret.Type.Field(i)
+		if b := f.Tag.Get("bson"); b == "_id" {
+			ret.IDFieldName = f.Name
+			break
+		}
+	}
 	return ret
 }

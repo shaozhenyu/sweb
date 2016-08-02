@@ -7,6 +7,7 @@ import (
 	"models"
 	"routes/auth"
 	"routes/uc"
+	"server/idincr"
 
 	"libs/cache"
 	"libs/install"
@@ -25,7 +26,9 @@ func main() {
 		return
 	}
 
-	ins := install.New()
+	coll := db.Session.DB("sweb").C("id_counter")
+	db.SetIDMaker(idincr.NewIntIDMaker(coll))
+	coll.Insert(odm.M{"_id": "sweb.friends", "offset": 1})
 
 	db.NewGroup(models.Friends{}, models.MobileIdentity{})
 
@@ -34,6 +37,8 @@ func main() {
 	if err != nil {
 		return
 	}
+
+	ins := install.New()
 
 	ins.Map(db)
 	ins.Map(rd_cache)

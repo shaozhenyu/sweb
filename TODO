@@ -1,6 +1,7 @@
 T1
 1.config
-2.用户
-3.token
-4.测试用例
-5.allowmethod
+2.用户权限,验证
+3.测试用例
+4.allowmethod
+5.代码修改后自动重新build
+6.mongo字段类型（readonly）
