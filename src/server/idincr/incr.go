@@ -30,7 +30,7 @@ func NewIntIDMaker(coll *mgo.Collection) *IntIDMaker {
 	}
 }
 
-func (this *IntIDMaker) IncrLoop(key string, ch_ chan int64) {
+func (this *IntIDMaker) incrLoop(key string, ch_ chan int64) {
 	for {
 		counter_ := counter{Offset: 1}
 		selector := M{"_id": key}
@@ -59,7 +59,7 @@ func (this *IntIDMaker) Incr(key string) interface{} {
 		this.Lock()
 		this.ch[key] = ch
 		this.Unlock()
-		go this.IncrLoop(key, ch)
+		go this.incrLoop(key, ch)
 	}
 	return <-ch
 }

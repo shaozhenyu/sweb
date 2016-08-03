@@ -2,6 +2,7 @@ package auth
 
 import (
 	"net/http"
+	"time"
 
 	"libs/cache"
 	"libs/errorcode"
@@ -13,6 +14,42 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gopkg.in/mgo.v2"
 )
+
+type Options struct {
+	Path     string
+	Domain   string
+	MaxAge   int
+	Secure   bool
+	HttpOnly bool
+}
+
+var DefaultSessionOptions = &Options{
+	Path:     "/",
+	MaxAge:   86400 * 7,
+	HttpOnly: true,
+}
+
+const SESSION_NAME = "SESSION_ID"
+
+func NewCookie(name, value string, options *Options) *http.Cookie {
+	cookie := &http.Cookie{
+		Name:     name,
+		Value:    value,
+		Path:     options.Path,
+		Domain:   options.Domain,
+		MaxAge:   options.MaxAge,
+		Secure:   options.Secure,
+		HttpOnly: options.HttpOnly,
+	}
+
+	if cookie.MaxAge > 0 {
+		d := time.Duration(options.MaxAge) * time.Second
+		cookie.Expires = time.Now().Add(d)
+	} else if options.MaxAge < 0 {
+		cookie.Expires = time.Unix(1, 0)
+	}
+	return cookie
+}
 
 func GetVerifyCode(log *xlog.Logger, db *odm.DB, cache_ cache.CacheStorage, args *GetVerifyCodeArgs, req *http.Request) (int, interface{}) {
 
@@ -44,7 +81,12 @@ func GetVerifyCode(log *xlog.Logger, db *odm.DB, cache_ cache.CacheStorage, args
 	return http.StatusOK, nil
 }
 
-func RegisterHandler(log *xlog.Logger, db *odm.DB, cache_ cache.CacheStorage, args *RegisterArgs, req *http.Request) (int, interface{}) {
+func GenResult(user models.User) (token string, ret map[string]interface{}) {
+	token = user.GenToken()
+	return token, map[string]interface{}{"token": map[string]interface{}{"token": token, "type": "Bearer"}, "user": user}
+}
+
+func RegisterHandler(log *xlog.Logger, db *odm.DB, cache_ cache.CacheStorage, args *RegisterArgs, req *http.Request, w http.ResponseWriter) (int, interface{}) {
 	bs, err := cache_.Get("mobile_code." + args.Mobile)
 	if err != nil {
 		log.Error(args, err)
@@ -65,7 +107,34 @@ func RegisterHandler(log *xlog.Logger, db *odm.DB, cache_ cache.CacheStorage, ar
 		return errorcode.HandleError(err)
 	}
 
-	log.Info("password : ", string(password))
+	mi := models.MobileIdentity{}
+	icoll := db.C(mi)
+	defer icoll.Close()
 
-	return 200, nil
+	err = icoll.Find(odm.M{"mobile": args.Mobile}).One(&mi)
+	if err == nil {
+		return errorcode.HandleError(errorcode.ErrDBDup)
+	}
+	if err != nil && err != mgo.ErrNotFound {
+		return errorcode.HandleError(err)
+	}
+
+	user := models.User{}
+	user.Password = string(password)
+	coll := db.C(user)
+	defer coll.Close()
+	if err = db.Insert(&user, nil); err != nil {
+		return errorcode.HandleError(err)
+	}
+
+	mi.Uid = user.Id
+	mi.Mobile = args.Mobile
+	if err = db.Insert(&mi, nil); err != nil {
+		return errorcode.HandleError(err)
+	}
+
+	token, ret := GenResult(user)
+	cookie := NewCookie(SESSION_NAME, token, DefaultSessionOptions)
+	http.SetCookie(w, cookie)
+	return 200, ret
 }

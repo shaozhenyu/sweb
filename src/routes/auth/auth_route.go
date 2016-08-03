@@ -22,16 +22,6 @@ type RegisterArgs struct {
 	Code     string `json:"code" valid:"required"`
 }
 
-type User struct {
-	Id        int64  `json:"id"`
-	Name      string `json:"name"`
-	Gender    string `json:"gender"`
-	Birthday  string `json:"birthday"`
-	Password  string `json:"-" bson:"password" readonly:"password"`
-	CreatedAt int64  `json:"created_at"`
-	UpdatedAt int64  `json:"updated_at"`
-}
-
 func Register(install_ *install.Install, db *odm.DB) {
 
 	install_.Group(ApiPrefix, func(r martini.Router) {

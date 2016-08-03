@@ -84,7 +84,7 @@ func (db *DB) Find2(selector interface{}, collName string) (interface{}, error) 
 	return v, nil
 }
 
-func (db *DB) SetID(obj interface{}, id interface{}) {
+func (db *DB) setId(obj interface{}, id interface{}) {
 	n := db.CollName(obj)
 	m := db.Coll[n]
 
@@ -96,14 +96,20 @@ func (db *DB) SetID(obj interface{}, id interface{}) {
 	}
 }
 
-func (db *DB) Insert(v interface{}, collName string) error {
+func (db *DB) Insert(v interface{}, ctx interface{}) error {
 	coll := db.C(v)
 	defer coll.Close()
 
 	if db.incr != nil {
-		db.SetID(v, db.incr.Incr(coll.FullName))
+		db.setId(v, db.incr.Incr(coll.FullName))
 	}
 	setUnixTime(v, time.Now().UnixNano(), "UpdatedAt", "CreatedAt")
+
+	if i, ok := v.(IBeforeInsert); ok {
+		if err := i.BeforeInsert(db); err != nil {
+			return err
+		}
+	}
 
 	err := coll.Insert(v)
 	if err != nil {
@@ -123,7 +129,7 @@ func (db *DB) Insert2(collName string, reader io.Reader) (interface{}, error) {
 		return nil, err
 	}
 
-	err = db.Insert(v, collName)
+	err = db.Insert(v, nil)
 	return v, err
 }
 

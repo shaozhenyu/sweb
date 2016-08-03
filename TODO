@@ -1,7 +1,7 @@
 T1
 1.config
-2.用户权限,验证
-3.测试用例
-4.allowmethod
-5.代码修改后自动重新build
-6.mongo字段类型（readonly）
+2.测试用例
+3.allowmethod
+4.代码修改后自动重新build
+5.mongo字段类型（readonly）
+6.用户id写入到用户操作的每一条记录中
