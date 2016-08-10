@@ -7,3 +7,7 @@ type IdMaker interface {
 type IBeforeInsert interface {
 	BeforeInsert(db *DB) error
 }
+
+type IAllowMethod interface {
+	AllowedMethod() string
+}

@@ -122,6 +122,13 @@ type Model struct {
 	reflect.Type
 }
 
+func (m *Model) IsAllowMethod(method string) bool {
+	if i, ok := m.Val.(IAllowMethod); ok {
+		return strings.Contains(strings.ToUpper(i.AllowedMethod()), strings.ToUpper(method))
+	}
+	return false
+}
+
 func newModel(val interface{}) *Model {
 
 	ret := &Model{Val: val, Type: reflect.TypeOf(val)}

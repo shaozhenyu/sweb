@@ -11,23 +11,29 @@ import (
 )
 
 type User struct {
-	Id        int64  `json:"id" bson:"_id"`
-	Gender    string `json:"gender" bson:"gender"`
-	Name      string `json:"name" bson:"name"`
-	Mobile    string `json:"mobile" bson:"-"`
-	Birthday  string `json:"birthday" bson:"birthday"` //1990-03-23
-	CreatedAt int64  `json:"created_at" bson:"created_at"`
-	UpdatedAt int64  `json:"updated_at" bson:"updated_at"`
-	APIKey    []byte `json:"-" bson:"api_key" readonly:"api_key"`
-	Password  string `json:"-" bson:"password" readonly:"password"`
+	Id          int64  `json:"id" bson:"_id"`
+	Gender      string `json:"gender" bson:"gender"`
+	Name        string `json:"name" bson:"name"`
+	Mobile      string `json:"mobile" bson:"-"`
+	Birthday    string `json:"birthday" bson:"birthday"` //1990-03-23
+	CreatedAt   int64  `json:"created_at" bson:"created_at"`
+	UpdatedAt   int64  `json:"updated_at" bson:"updated_at"`
+	APIKey      []byte `json:"-" bson:"api_key" readonly:"api_key"`
+	Password    string `json:"-" bson:"password" readonly:"password"`
+	AllowMethod string `json:"-" bson:"-"`
+}
+
+func (u User) AllowedMethod() string {
+	return u.AllowMethod
 }
 
 type MobileIdentity struct {
-	Id        int64  `json:"id" bson:"_id"`
-	Uid       int64  `json:"uid" bson:"uid"`
-	Mobile    string `json:"mobile" bson:"mobile"`
-	CreatedAt int64  `json:"created_at" bson:"created_at"`
-	UpdatedAt int64  `json:"updated_at" bson:"updated_at"`
+	Id          int64  `json:"id" bson:"_id"`
+	Uid         int64  `json:"uid" bson:"uid"`
+	Mobile      string `json:"mobile" bson:"mobile"`
+	CreatedAt   int64  `json:"created_at" bson:"created_at"`
+	UpdatedAt   int64  `json:"updated_at" bson:"updated_at"`
+	AllowMethod string `json:"-" bson:"-"`
 }
 
 const (
