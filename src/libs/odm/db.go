@@ -77,6 +77,9 @@ func (d *DB) NewGroup(v ...interface{}) error {
 		coll[collname] = newModel(v_)
 		if _, has := d.Coll[collname]; !has {
 			d.Coll[collname] = coll[collname]
+			if err := d.buildMgoIndex(coll[collname]); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -117,9 +120,10 @@ func (db *DB) SetIDMaker(incr IdMaker) {
 }
 
 type Model struct {
-	Val         interface{}
-	IDFieldName string
+	Val interface{}
 	reflect.Type
+	MgoIndexTags []MgoIndexTag
+	IDFieldName  string
 }
 
 func (m *Model) IsAllowMethod(method string) bool {
@@ -131,7 +135,29 @@ func (m *Model) IsAllowMethod(method string) bool {
 
 func newModel(val interface{}) *Model {
 
+	mgoIndexTags := []MgoIndexTag{}
+
+	parseMgoIndexTagsFunc := func(field reflect.StructField, i int) {
+		tag := field.Tag.Get(mgoIndexTagName)
+		if tag == "" {
+			return
+		}
+
+		tag = strings.Replace(tag, "'", "\"", -1)
+		if idx, err := newMgoIndexTag(tag); err != nil {
+			return
+		} else {
+			mgoIndexTags = append(mgoIndexTags, *idx)
+		}
+	}
+
 	ret := &Model{Val: val, Type: reflect.TypeOf(val)}
+	for i := 0; i < ret.Type.NumField(); i++ {
+		f := ret.Type.Field(i)
+		parseMgoIndexTagsFunc(f, i)
+	}
+
+	ret.MgoIndexTags = mgoIndexTags
 
 	for i := 0; i < ret.Type.NumField(); i++ {
 		f := ret.Type.Field(i)
@@ -141,4 +167,21 @@ func newModel(val interface{}) *Model {
 		}
 	}
 	return ret
+}
+
+func (db *DB) buildMgoIndex(m *Model) error {
+
+	if len(m.MgoIndexTags) <= 0 {
+		return nil
+	}
+
+	coll := db.C(m.Val)
+	defer coll.Close()
+
+	for _, v := range m.MgoIndexTags {
+		if err := coll.EnsureIndex(*v.Index); err != nil {
+			return err
+		}
+	}
+	return nil
 }
