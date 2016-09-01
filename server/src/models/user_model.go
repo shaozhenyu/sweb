@@ -27,6 +27,10 @@ func (u User) AllowedMethod() string {
 	return u.AllowMethod
 }
 
+func (u *User) Uid() int64 {
+	return u.Id
+}
+
 type MobileIdentity struct {
 	Id          int64  `json:"id" bson:"_id"`
 	Uid         int64  `json:"uid" bson:"uid"`

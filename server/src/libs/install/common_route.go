@@ -8,6 +8,7 @@ import (
 	"libs/errorcode"
 	"libs/odm"
 
+	"github.com/codegangsta/inject"
 	"github.com/go-martini/martini"
 	"github.com/qiniu/xlog"
 )
@@ -15,6 +16,17 @@ import (
 const (
 	prefix = "/api/sweb"
 )
+
+func getIUser(ctx martini.Context) (odm.IUser, error) {
+	i := ctx.Get(inject.InterfaceOf((*odm.IUser)(nil)))
+	if !i.IsValid() {
+		return nil, errorcode.ErrNeedLogin
+	}
+	if i.IsNil() {
+		return nil, errorcode.ErrNeedLogin
+	}
+	return i.Interface().(odm.IUser), nil
+}
 
 func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Router, mhandlers ...martini.Handler) {
 
@@ -35,7 +47,12 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 		}
 
 		if coll.IsAllowMethod("POST") {
-			r.Post(fmt.Sprintf("/%s", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request) (int, interface{}) {
+			r.Post(fmt.Sprintf("/%s", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request, mctx martini.Context) (int, interface{}) {
+
+				authUser, err := getIUser(mctx)
+				if err != nil {
+					return errorcode.HandleError(err)
+				}
 
 				statusCode, ret := PostResource(log, db, collname, req)
 				return statusCode, ret

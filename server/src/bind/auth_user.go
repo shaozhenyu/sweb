@@ -32,10 +32,11 @@ func BindAuthUser() martini.Handler {
 		}()
 
 		db := context.Get(reflect.TypeOf((*odm.DB)(nil))).Interface().(*odm.DB)
-		_, err = GetUserFromReq(db, req)
-		if err != nil {
+		u, err1 := GetUserFromReq(db, req)
+		if err1 != nil {
 			return
 		}
+		context.MapTo(u, (*odm.IUser)(nil))
 	}
 }
 
