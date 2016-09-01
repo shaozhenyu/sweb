@@ -1,0 +1,14 @@
+third/bin
+third/pkg
+
+
+*.a
+*.o
+*.so
+
+pkg
+*bin
+
+*.exe
+
+*.tmp

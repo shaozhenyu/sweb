@@ -6,5 +6,4 @@ fi
 
 BASE=$(pwd)
 ROOT=`dirname $BASE`
-echo $BASE
 export GOPATH=$GOPATH:$ROOT/third
