@@ -28,7 +28,12 @@ func getIUser(ctx martini.Context) (odm.IUser, error) {
 	return i.Interface().(odm.IUser), nil
 }
 
-func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Router, mhandlers ...martini.Handler) {
+func (this *Install) RegisterCommon(db *odm.DB, collname string, mhandlers ...martini.Handler) {
+
+	if db == nil {
+		return
+	}
+	this.Map(db)
 
 	coll := db.Coll[collname]
 	this.Group(prefix, func(r martini.Router) {
@@ -48,11 +53,6 @@ func (this *Install) RegisterCommon(db *odm.DB, collname string, m martini.Route
 
 		if coll.IsAllowMethod("POST") {
 			r.Post(fmt.Sprintf("/%s", collname), func(log *xlog.Logger, db *odm.DB, params martini.Params, req *http.Request, mctx martini.Context) (int, interface{}) {
-
-				authUser, err := getIUser(mctx)
-				if err != nil {
-					return errorcode.HandleError(err)
-				}
 
 				statusCode, ret := PostResource(log, db, collname, req)
 				return statusCode, ret

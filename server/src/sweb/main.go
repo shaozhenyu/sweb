@@ -7,13 +7,13 @@ import (
 	"bind"
 	"models"
 	"routes/auth"
+	"routes/city"
 	"routes/uc"
 	"server/idincr"
 
 	"libs/cache"
 	"libs/install"
 	"libs/odm"
-
 	//"github.com/go-martini/martini"
 )
 
@@ -32,7 +32,8 @@ func main() {
 
 	db.NewGroup(models.Friends{AllowMethod: "GET|POST|LIST|PUT|DELETE"},
 		models.MobileIdentity{},
-		models.User{AllowMethod: "GET"})
+		models.User{AllowMethod: "GET"},
+		city.City{})
 
 	RedisHost := "127.0.0.1:6379"
 	rd_cache, err := cache.New(RedisHost, 0, 100)
@@ -47,9 +48,10 @@ func main() {
 
 	uc.Register(ins)
 	auth.Register(ins, db)
+	city.Register(ins, db)
 
-	ins.RegisterCommon(db, "friends", ins, bind.BindAuthUser())
-	ins.RegisterCommon(db, "mobileidentities", ins)
-	ins.RegisterCommon(db, "users", ins)
+	ins.RegisterCommon(db, "friends", bind.BindAuthUser())
+	ins.RegisterCommon(db, "mobileidentities")
+	ins.RegisterCommon(db, "users")
 	ins.RunOnAddr(":8080")
 }
