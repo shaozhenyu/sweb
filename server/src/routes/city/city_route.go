@@ -27,5 +27,6 @@ type City struct {
 func Register(install_ *install.Install, db *odm.DB) {
 	install_.Group(ApiPrefix, func(r martini.Router) {
 		r.Post("/new_city", bind.Json2Struct(City{}), AddNewCity)
+		r.Get("/get_city_times", GetCityTimes)
 	}, userBind.BindAuthUser())
 }

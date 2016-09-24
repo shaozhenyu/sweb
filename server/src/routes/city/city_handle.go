@@ -47,3 +47,23 @@ func AddNewCity(log *xlog.Logger, db *odm.DB, authUser odm.IUser, args *City, r 
 
 	return 200, m
 }
+
+func GetCityTimes(log *xlog.Logger, db *odm.DB, authUser odm.IUser, r *http.Request) (int, interface{}) {
+
+	cityName := r.URL.Query().Get("name")
+	cityNation := r.URL.Query().Get("nation")
+
+	if cityName == "" || cityNation == "" {
+		return errorcode.HandleError(errorcode.ErrBadRequestBody)
+	}
+
+	m := City{}
+	coll := db.C(m)
+	defer coll.Close()
+
+	if err := coll.Find(odm.M{"name": cityName, "nation": cityNation}).One(&m); err != nil {
+		return errorcode.HandleError(err)
+	}
+
+	return 200, m.Times
+}
