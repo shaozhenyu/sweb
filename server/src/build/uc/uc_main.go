@@ -4,12 +4,12 @@ import (
 	"fmt"
 	//"net/http"
 
-	"bind"
-	"models"
-	"routes/auth"
-	"routes/city"
-	"routes/uc"
-	"server/idincr"
+	"uc/bind"
+	"uc/models"
+	"uc/routes/auth"
+	"uc/routes/city"
+	"uc/routes/uc"
+	"uc/server/idincr"
 
 	"libs/cache"
 	"libs/install"

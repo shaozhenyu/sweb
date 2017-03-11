@@ -1,7 +1,7 @@
 package city
 
 import (
-	userBind "bind"
+	userBind "uc/bind"
 
 	"libs/install"
 	"libs/install/bind"

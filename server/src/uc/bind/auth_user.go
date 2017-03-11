@@ -9,12 +9,11 @@ import (
 	"libs/errorcode"
 	libBind "libs/install/bind"
 	"libs/odm"
-	"models"
+	"uc/models"
 	tokenPkg "utils/token"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/go-martini/martini"
-	//"github.com/qiniu/log"
 	"github.com/qiniu/xlog"
 )
 

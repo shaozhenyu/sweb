@@ -7,7 +7,7 @@ import (
 	"libs/cache"
 	"libs/errorcode"
 	"libs/odm"
-	"models"
+	"uc/models"
 	"utils/rand"
 
 	"github.com/qiniu/xlog"
