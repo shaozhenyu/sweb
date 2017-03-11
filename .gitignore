@@ -12,3 +12,5 @@ pkg
 *.exe
 
 *.tmp
+
+server/src/sweb/sweb
