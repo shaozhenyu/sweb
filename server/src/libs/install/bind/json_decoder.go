@@ -18,7 +18,6 @@ var (
 )
 
 func Json2Struct(obj interface{}) martini.Handler {
-
 	objType := reflect.TypeOf(obj)
 	if objType.Kind() != reflect.Struct {
 		panic("obj must a struct, not a ptr")

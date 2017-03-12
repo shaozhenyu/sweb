@@ -22,11 +22,18 @@ type RegisterArgs struct {
 	Code     string `json:"code" valid:"required"`
 }
 
+type ChatRegisterArgs struct {
+	Name     string `json:"name" valid:"required"`
+	Password string `json:"password" valid:"required"`
+}
+
 func Register(install_ *install.Install, db *odm.DB) {
 
 	install_.Group(ApiPrefix, func(r martini.Router) {
 		r.Post("/get_verify_code", bind.Json2Struct(GetVerifyCodeArgs{}), GetVerifyCode)
 		r.Post("/register", bind.Json2Struct(RegisterArgs{}), RegisterHandler)
+
+		r.Post("/chat_register", bind.Json2Struct(ChatRegisterArgs{}), ChatRegisterHandler)
 	})
 
 }

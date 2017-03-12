@@ -68,6 +68,7 @@ var (
 	ErrApiAuthUserNotFound  = New(403, 20004, "user info not found")
 	ErrApiAuthNeedSSL       = New(403, 20005, "please access api with ssl")
 	ErrPasswordNotMatch     = New(400, 20006, "password not match")
+	ErrUserExisted          = New(400, 20007, "user name has existed")
 	ErrApiAuth              = New(403, 4030, "无权限")
 )
 
