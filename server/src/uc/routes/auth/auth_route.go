@@ -22,7 +22,7 @@ type RegisterArgs struct {
 	Code     string `json:"code" valid:"required"`
 }
 
-type ChatRegisterArgs struct {
+type ChatUserArgs struct {
 	Name     string `json:"name" valid:"required"`
 	Password string `json:"password" valid:"required"`
 }
@@ -33,7 +33,8 @@ func Register(install_ *install.Install, db *odm.DB) {
 		r.Post("/get_verify_code", bind.Json2Struct(GetVerifyCodeArgs{}), GetVerifyCode)
 		r.Post("/register", bind.Json2Struct(RegisterArgs{}), RegisterHandler)
 
-		r.Post("/chat_register", bind.Json2Struct(ChatRegisterArgs{}), ChatRegisterHandler)
+		r.Post("/chat_register", bind.Json2Struct(ChatUserArgs{}), ChatRegisterHandler)
+		r.Post("/chat_login", bind.Json2Struct(ChatUserArgs{}), ChatLoginHander)
 	})
 
 }

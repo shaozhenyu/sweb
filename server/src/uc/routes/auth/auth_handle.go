@@ -86,7 +86,22 @@ func GenResult(user models.User) (token string, ret map[string]interface{}) {
 	return token, map[string]interface{}{"token": map[string]interface{}{"token": token, "type": "Bearer"}, "user": user}
 }
 
-func ChatRegisterHandler(log *xlog.Logger, db *odm.DB, args *ChatRegisterArgs, req *http.Request, w http.ResponseWriter) (int, interface{}) {
+func ChatLoginHander(log *xlog.Logger, db *odm.DB, args *ChatUserArgs, req *http.Request, w http.ResponseWriter) (int, interface{}) {
+	name := args.Name
+	password := args.Password
+
+	m := models.User{}
+	coll := db.C(&m)
+	defer coll.Close()
+
+	err := coll.Find(odm.M{"name": name, "password": password}).One(&m)
+	if err != nil {
+		return errorcode.HandleError(err)
+	}
+	return 200, "ok"
+}
+
+func ChatRegisterHandler(log *xlog.Logger, db *odm.DB, args *ChatUserArgs, req *http.Request, w http.ResponseWriter) (int, interface{}) {
 	newName := args.Name
 	m := models.User{}
 	coll := db.C(&m)
