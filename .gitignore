@@ -16,3 +16,4 @@ pkg
 server/src/sweb/sweb
 server/src/build/uc/uc
 server/src/build/chatclient/chatclient
+server/src/build/chatserver/chatserver
