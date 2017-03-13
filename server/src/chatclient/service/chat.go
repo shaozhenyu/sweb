@@ -17,6 +17,7 @@ func Chat(username string) {
 		log.Fatal(err)
 	}
 	defer conn.Close()
+
 	_, err = conn.Write([]byte(username))
 	if err != nil {
 		log.Fatal(err)
@@ -24,8 +25,11 @@ func Chat(username string) {
 
 	buf := make([]byte, 1024)
 	_, err = conn.Read(buf)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	if err != nil || string(buf[:5]) == "Error" {
+	if string(buf[:5]) == "Error" {
 		log.Fatal(string(buf))
 	} else {
 		fmt.Println(string(buf))

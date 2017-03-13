@@ -69,13 +69,12 @@ func Register(args []string) {
 	if resp.StatusCode != 200 {
 		log.Fatal(resp.Status)
 	}
-	fmt.Println("Register ok : ", string(body))
+	fmt.Println("Register ok")
 	Chat(username)
 }
 
 func Login(args []string) {
 	username, password, _ := getNameAndPassword("login")
-	fmt.Println(username, password)
 
 	body, err := jsonBody(username, password)
 	if err != nil {

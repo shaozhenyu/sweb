@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 )
 
 type User struct {
 	Name string
 	Ip   string
 	Conn net.Conn
+	sync.Mutex
 }
 
 var (
@@ -75,21 +77,31 @@ func handleConnection(user *User) {
 		if err != nil {
 			break
 		}
-		tmp := bytes.TrimLeft(buf, "send ")
-		if len(tmp) < 2 {
-			user.Conn.Write([]byte("please write the friend you need to chat"))
+		if bytes.HasPrefix(buf, []byte("send ")) {
+			buf = buf[5:]
+		}
+		b := bytes.SplitN(buf, []byte(" "), 2)
+		if len(b) < 2 {
+			user.Lock()
+			user.Conn.Write([]byte("please write the friend you need to chat\n"))
+			user.Unlock()
 			continue
 		}
-		b := bytes.SplitN(tmp, []byte(" "), 2)
 		friendName := string(b[0])
 		if friendName == user.Name {
+			user.Lock()
 			user.Conn.Write([]byte("can not send msg to youself\n"))
+			user.Unlock()
 			continue
 		}
 		if friend, ok := allUser[friendName]; ok {
+			friend.Lock()
 			friend.Conn.Write([]byte(sendMsgPrefix + string(b[1])))
+			friend.Unlock()
 		} else {
+			friend.Lock()
 			user.Conn.Write([]byte("friend not exists or offline\n"))
+			friend.Unlock()
 		}
 	}
 	delete(allUser, user.Name)
