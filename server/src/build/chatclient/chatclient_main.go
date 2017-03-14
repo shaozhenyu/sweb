@@ -22,4 +22,7 @@ func main() {
 func Reg(cmds *cli.Cmds) {
 	cmds.Reg("login", "user login", service.Login)
 	cmds.Reg("register", "register new user", service.Register)
+
+	login1 := cmds.Sub("login1", "user login another way")
+	login1.Reg("chat", "chat with someone", service.ChatWith)
 }

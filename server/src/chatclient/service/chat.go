@@ -11,6 +11,11 @@ import (
 
 var ch chan int = make(chan int)
 
+func ChatWith(args []string) {
+	fmt.Println(args)
+	println("TODO")
+}
+
 func Chat(username string) {
 	conn, err := net.Dial("tcp", "127.0.0.1:10000")
 	if err != nil {
