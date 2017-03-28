@@ -17,3 +17,7 @@ server/src/sweb/sweb
 server/src/build/uc/uc
 server/src/build/chatclient/chatclient
 server/src/build/chatserver/chatserver
+
+server/src/build/slsync/slsync
+server/src/build/slsync/data
+server/src/build/slsync/.slsync
